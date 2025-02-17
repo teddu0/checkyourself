@@ -44,5 +44,5 @@ app.post("/verify", (req, res) => {
   return res.status(404).json({ message: "Invalid string", success: false });
 });
 
-const PORT = 8080;
+const PORT = 8000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
