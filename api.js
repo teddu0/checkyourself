@@ -2,7 +2,10 @@ const express = require("express");
 const cors = require("cors"); // Импортируем cors
 
 const app = express();
-app.use(cors);
+
+// Middleware
+app.use(cors()); // Включаем CORS
+app.use(express.json()); // Парсим JSON-тело запроса
 
 let storedString = null;
 let timeoutId = null;
@@ -20,11 +23,13 @@ app.post("/generate", (req, res) => {
   console.log(`Generated string: ${storedString}`);
 
   // Очистка через 5 минут
-  clearTimeout(timeoutId);
+  if (timeoutId) {
+    clearTimeout(timeoutId);
+  }
   timeoutId = setTimeout(() => {
     storedString = null;
     console.log("Stored string expired.");
-  }, 1 * 60 * 1000);
+  }, 5 * 60 * 1000); // 5 минут
 
   res.status(200).json({ message: "String generated", value: storedString });
 });
@@ -32,6 +37,10 @@ app.post("/generate", (req, res) => {
 // Эндпоинт проверки строки
 app.post("/verify", (req, res) => {
   const { value } = req.body;
+
+  if (!value) {
+    return res.status(400).json({ message: "Value is required" });
+  }
 
   if (!storedString) {
     return res.status(404).json({ message: "No stored string" });
@@ -41,8 +50,9 @@ app.post("/verify", (req, res) => {
     return res.status(200).json({ message: "Valid string", success: true });
   }
 
-  return res.status(404).json({ message: "Invalid string", success: false });
+  return res.status(400).json({ message: "Invalid string", success: false });
 });
 
-const PORT = 8000;
+// Запуск сервера
+const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
